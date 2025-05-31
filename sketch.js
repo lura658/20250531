@@ -84,11 +84,11 @@ function drawQuestion() {
 
 function checkAnswer() {
   for (let hand of predictions) {
-    if (isPeace(hand)) {
+    if (isOpenHand(hand)) {
       fill(0, 255, 0);
       text("選擇 A", width / 2, 400);
       if (correctAnswer === "A") gameState = "correct";
-    } else if (isPointing(hand)) {
+    } else if (isFist(hand)) {
       fill(0, 255, 0);
       text("選擇 B", width / 2, 400);
       if (correctAnswer === "B") gameState = "correct";
@@ -96,28 +96,33 @@ function checkAnswer() {
   }
 }
 
-function isPeace(hand) {
-  let index = hand.annotations.indexFinger;
-  let middle = hand.annotations.middleFinger;
-  let ring = hand.annotations.ringFinger;
-  let pinky = hand.annotations.pinky;
-  // 食指和中指明顯伸直，無名指和小指明顯彎曲
-  let indexUp = index[3][1] < index[0][1] - 10;
-  let middleUp = middle[3][1] < middle[0][1] - 10;
-  let ringDown = ring[3][1] > ring[0][1] + 10;
-  let pinkyDown = pinky[3][1] > pinky[0][1] + 10;
-  return indexUp && middleUp && ringDown && pinkyDown;
+// 張開手：五指都伸直
+function isOpenHand(hand) {
+  let fingers = [
+    hand.annotations.thumb,
+    hand.annotations.indexFinger,
+    hand.annotations.middleFinger,
+    hand.annotations.ringFinger,
+    hand.annotations.pinky
+  ];
+  // 指尖y座標比根部高(往上伸直)，閾值放寬
+  return fingers.every(f => f[3][1] < f[0][1] - 20);
 }
 
-function isPointing(hand) {
-  let index = hand.annotations.indexFinger;
-  let middle = hand.annotations.middleFinger;
-  // 食指明顯伸直，中指明顯彎曲
-  let indexUp = index[3][1] < index[0][1] - 10;
-  let middleDown = middle[3][1] > middle[0][1] + 10;
-  return indexUp && middleDown;
+// 握拳：五指都彎曲
+function isFist(hand) {
+  let fingers = [
+    hand.annotations.thumb,
+    hand.annotations.indexFinger,
+    hand.annotations.middleFinger,
+    hand.annotations.ringFinger,
+    hand.annotations.pinky
+  ];
+  // 指尖y座標比根部低(往下彎曲)，閾值放寬
+  return fingers.every(f => f[3][1] > f[0][1] + 10);
 }
 
+// 顯示所有手勢點點，取消食指紅圈
 function drawHandKeypoints() {
   for (let i = 0; i < predictions.length; i++) {
     const prediction = predictions[i];
@@ -127,22 +132,24 @@ function drawHandKeypoints() {
       noStroke();
       ellipse(x, y, 8, 8);
     }
-    // 在食指指尖畫一個大圓
-    if (prediction.annotations && prediction.annotations.indexFinger) {
-      const tip = prediction.annotations.indexFinger[3];
-      fill(255, 0, 0, 180);
-      noStroke();
-      ellipse(tip[0], tip[1], 24, 24);
-    }
+    // 取消食指紅圈
   }
 }
 
-// 新增互動說明
+// 說明移到畫布右外側
 function drawInstruction() {
+  let infoX = width + 20;
   fill(255, 240);
-  rect(width - 210, 20, 190, 110, 16);
+  rect(infoX, 20, 220, 120, 16);
   fill(0);
   textSize(16);
   textAlign(LEFT, TOP);
-  text("互動說明：\n\n- 食指紅圈：偵測到的食指指尖\n- 勝利手勢（V）：選擇A\n- 指指手勢：選擇B\n- 點擊藍色按鈕開始", width - 200, 30);
+  text(
+    "互動說明：\n\n" +
+    "- 綠點：偵測到的手部關鍵點\n" +
+    "- 張開手：選擇A\n" +
+    "- 握拳：選擇B\n" +
+    "- 按 Enter 開始遊戲",
+    infoX + 10, 30
+  );
 }
