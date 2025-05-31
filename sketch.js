@@ -101,18 +101,20 @@ function isPeace(hand) {
   let middle = hand.annotations.middleFinger;
   let ring = hand.annotations.ringFinger;
   let pinky = hand.annotations.pinky;
-  let indexUp = index[3][1] < index[0][1];
-  let middleUp = middle[3][1] < middle[0][1];
-  let ringDown = ring[3][1] > ring[0][1];
-  let pinkyDown = pinky[3][1] > pinky[0][1];
+  // 食指和中指明顯伸直，無名指和小指明顯彎曲
+  let indexUp = index[3][1] < index[0][1] - 10;
+  let middleUp = middle[3][1] < middle[0][1] - 10;
+  let ringDown = ring[3][1] > ring[0][1] + 10;
+  let pinkyDown = pinky[3][1] > pinky[0][1] + 10;
   return indexUp && middleUp && ringDown && pinkyDown;
 }
 
 function isPointing(hand) {
   let index = hand.annotations.indexFinger;
   let middle = hand.annotations.middleFinger;
-  let indexUp = index[3][1] < index[0][1];
-  let middleDown = middle[3][1] > middle[0][1];
+  // 食指明顯伸直，中指明顯彎曲
+  let indexUp = index[3][1] < index[0][1] - 10;
+  let middleDown = middle[3][1] > middle[0][1] + 10;
   return indexUp && middleDown;
 }
 
